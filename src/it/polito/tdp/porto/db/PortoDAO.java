@@ -4,7 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import it.polito.tdp.porto.model.Adiacenza;
 import it.polito.tdp.porto.model.Author;
 import it.polito.tdp.porto.model.Paper;
 
@@ -64,5 +68,57 @@ public class PortoDAO {
 			 e.printStackTrace();
 			throw new RuntimeException("Errore Db");
 		}
+	}
+
+	public List<Author> loadAllAuthors(Map<Integer, Author> authorsMap) {
+		final String sql = "SELECT * FROM author";
+		List<Author> autori = new ArrayList<Author>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+
+				Author autore = new Author(rs.getInt("id"), rs.getString("lastname"), rs.getString("firstname"));
+				authorsMap.put(autore.getId(), autore);
+				autori.add(autore);
+			}
+
+		} catch (SQLException e) {
+			// e.printStackTrace();
+			throw new RuntimeException("Errore Db");
+		}
+		return autori;
+	}
+
+	public List<Adiacenza> getAutoriAdiacenti() {
+		
+		final String sql = "SELECT c1.authorid id1, c2.authorid id2 " + 
+				"FROM creator c1, creator c2 " + 
+				"WHERE c1.authorid < c2.authorid " + 
+				" AND c1.eprintid = c2.eprintid ";
+		List<Adiacenza> autoriAdiacenti = new ArrayList<Adiacenza>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+
+				Adiacenza a = new Adiacenza(rs.getInt("id1"), rs.getInt("id2"));
+				autoriAdiacenti.add(a);
+				System.out.println(a.toString());
+			}
+
+		} catch (SQLException e) {
+			// e.printStackTrace();
+			throw new RuntimeException("Errore Db");
+		}
+		return autoriAdiacenti;
 	}
 }
