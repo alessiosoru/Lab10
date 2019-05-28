@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 
 import it.polito.tdp.porto.model.Author;
 import it.polito.tdp.porto.model.Model;
+import it.polito.tdp.porto.model.Paper;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
@@ -33,19 +34,44 @@ public class PortoController {
 
     @FXML
     void handleCoautori(ActionEvent event) {
-    	Author autore = this.boxPrimo.getValue();
-    	List<Author> coAutori;
-    	coAutori = model.trovaCoAutoriDi(autore);
-    	String coAutoriString="Lista coautori di "+autore.toString()+":\n";
-    	for(Author a : coAutori) {
-    		coAutoriString = coAutoriString+a.toString()+"\n";
+    	this.txtResult.clear();
+    	try{
+    		Author autore = this.boxPrimo.getValue();
+    		List<Author> coAutori;
+        	coAutori = model.trovaCoAutoriDi(autore);
+        	String coAutoriString="Lista coautori di "+autore.toString()+":\n";
+        	for(Author a : coAutori) {
+        		coAutoriString = coAutoriString+a.toString()+"\n";
+        	}
+        	this.txtResult.appendText(coAutoriString);
+        	this.boxSecondo.getItems().addAll(this.model.getNonCoautori(autore));
+    	}catch(NullPointerException e) {
+    		this.txtResult.appendText("Selezionare un autore per trovare i coautori");
     	}
-    	this.txtResult.appendText(coAutoriString);
+    	
     }
 
     @FXML
     void handleSequenza(ActionEvent event) {
-
+    	Author a1 = this.boxPrimo.getValue();
+    	Author a2 = this.boxSecondo.getValue();
+    	List<Paper> papers = model.articoliDaCamminoMinimo(a1, a2);
+    	String articoli = "";
+    	this.txtResult.clear();
+    	try{
+    		if(papers.isEmpty()) {
+    		this.txtResult.appendText("Non ci sono articoli che collegano i due autori");
+    	} else {
+    		for(Paper p : papers) {
+    			articoli = articoli + p.toString()+"\n";
+       		}
+    	 	this.txtResult.appendText("Tramite altri coautori, i seguenti articoli\ncollegano gli autori "+a1.toString()+
+    			" e "+a2.toString()+":\n"+articoli);
+    	}
+    	}catch(Exception e) {
+    		this.txtResult.appendText("Non ci sono articoli che collegano i due autori"+
+    					"O uno degli autori non ha ancora scritto pubblicazioni");
+        }
     }
 
     @FXML
@@ -62,6 +88,5 @@ public class PortoController {
 		this.model = model;
 		model.creaGrafo();
 		this.boxPrimo.getItems().addAll(this.model.getAuthors());
-		this.boxSecondo.getItems().addAll(this.model.getAuthors());
 	}
 }

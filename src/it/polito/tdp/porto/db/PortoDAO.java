@@ -121,4 +121,34 @@ public class PortoDAO {
 		}
 		return autoriAdiacenti;
 	}
+
+	public Paper getArticoloInComune(int idAuthor1, int idAuthor2) {
+		final String sql = "SELECT paper.eprintid,  title, issn, publication, type, types " + 
+				"FROM paper, creator c1, creator c2 " + 
+				"WHERE c1.authorid = ? AND c2.authorid = ? AND " + 
+				"paper.eprintid=c1.eprintid AND " + 
+				"paper.eprintid=c2.eprintid AND " + 
+				"c1.eprintid=c2.eprintid";
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, idAuthor1);
+			st.setInt(2, idAuthor2);
+			
+			ResultSet rs = st.executeQuery();
+
+			if (rs.next()) { // mi basta prendere un solo articolo in comune
+				Paper paper = new Paper(rs.getInt("paper.eprintid"), rs.getString("title"), rs.getString("issn"),
+						rs.getString("publication"), rs.getString("type"), rs.getString("types"));
+				return paper;
+			}
+
+			return null;
+
+		} catch (SQLException e) {
+			// e.printStackTrace();
+			throw new RuntimeException("Errore Db");
+		}
+	}
 }
